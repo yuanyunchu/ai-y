@@ -13,8 +13,10 @@ AI 生成的所有文档必须符合 OpenSpec 格式，走 Explore → Propose �
 |---------|--------------|---------|---------|--------|
 | **① 需求与调研** | **Explore** | Kimi-k2.6 / Claude Sonnet 200k | 长上下文，吞食代码库和文档，召回率优先 | `proposal.md` + `project-context/01-requirement/ai-analysis/` |
 | **② 架构与设计** | **Propose** | DeepSeek-v4-pro / o3 / Claude 3.7 thinking | 深度推理，因果分析和逻辑严密性 | `design.md` + `specs/` + `project-context/02-design/` |
-| **③ 核心开发** | **Apply（攻坚）** | DeepSeek-v4-pro / o3-mini-high | 理解深层依赖和边界条件 | 核心算法/框架层代码 |
-| **④ 标准开发** | **Apply（量产）** | Ark-code-latest / GPT-4o / Gemini Flash | 追求吞吐量和响应速度 | CRUD/API/UT 样板代码 |
+| **③ 核心开发（后端）** | **Apply（攻坚）** | DeepSeek-v4-pro / o3-mini-high | 理解深层依赖和边界条件 | 核心算法/框架层代码 |
+| **③ 核心开发（前端）** | **Apply（攻坚）** | DeepSeek-v4-pro / Claude 3.7 Sonnet | 理解复杂交互逻辑和状态管理 | 核心组件/权限/SDK封装 |
+| **④ 标准开发（后端）** | **Apply（量产）** | Ark-code-latest / GPT-4o / Gemini Flash | 追求吞吐量和响应速度 | CRUD/API/UT 样板代码 |
+| **④ 标准开发（前端）** | **Apply（量产）** | Ark-code-latest / GPT-4o / Gemini Flash | 追求吞吐量和响应速度 | 列表页/表单页/详情页 样板代码 |
 | **⑤ 测试 Debug** | **Apply（收尾）** / Archive | DeepSeek-v4-flash / GPT-4o-mini | 毫秒级响应，几乎零成本 | 修复代码 + `bug-fixes.md` |
 
 ---
@@ -41,12 +43,13 @@ AI 生成的所有文档必须符合 OpenSpec 格式，走 Explore → Propose �
 
 ## 关键规则
 
-- 环节① 必须限定上下文范围，先给 common-api + Gateway 路由，再深入目标服务
+- 环节① 必须限定上下文范围，先给 common-api + Gateway 路由，再深入目标服务；前端需提供路由配置 + 状态管理模块
 - 环节②③ 必须要求 AI 先输出伪代码/思考过程，确认后再输出正式代码
 - 环节③ 核心代码禁止直接合入，必须经过 Code Review 或对抗性审查
 - 环节④ 允许 AI 直接生成后人工快速 Review
-- 环节⑤ 日志脱敏后再给 AI
+- 环节⑤ 日志脱敏后再给 AI；前端需提供浏览器控制台报错 + 网络请求
 - 全局规范文件位于 `project-context/00-global/`，所有 AI 调用应将其作为 system prompt 上下文
+- 前端编码规范见 `project-context/00-global/frontend-standard.md`，前端架构见 `project-context/00-global/frontend-architecture.md`
 
 ---
 

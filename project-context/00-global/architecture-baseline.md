@@ -1,20 +1,22 @@
-# 微服务全景架构基线
+# 全栈架构基线
 
-> 项目级全局文档，记录 codexx 微服务体系的总体架构
-> 任何变更若涉及新增服务、调整服务边界、变更跨服务调用关系，必须更新本文档
+> 项目级全局文档，记录 codexx 全栈体系的总体架构（后端微服务 + 前端）
+> 任何变更若涉及新增服务、调整服务边界、变更跨服务调用关系或前端架构调整，必须更新本文档
 
 ---
 
-## 1. 服务全景图
+## 1. 全栈架构图
 
 ```mermaid
 graph TB
-    GW[Spring Cloud Gateway 端口:8080] -->|路由| AUTH[auth-service 认证中心]
+    FE[前端 Vue2] -->|HTTP| GW[Spring Cloud Gateway 端口:8080]
+    GW -->|路由| AUTH[auth-service 认证中心]
     GW -->|路由| ORDER[order-service 订单服务 ★]
     GW -->|路由| USER[user-service 用户服务 ★]
     GW -->|路由| PAY[payment-service 支付服务 ★]
     GW -->|路由| PROD[product-service 商品服务]
 
+    FE -->|静态资源| CDN[CDN / Nginx]
     ORDER -->|Feign| USER
     ORDER -->|Feign| PAY
     ORDER -->|Feign| PROD
@@ -46,7 +48,23 @@ graph TB
 
 ---
 
-## 2. 服务清单
+## 2. 前端服务
+
+| 项 | 值 |
+|----|-----|
+| 框架 | Vue 2.x |
+| 部署方式 | <!-- TODO: Nginx / CDN / OSS --> |
+| 域名 | <!-- TODO --> |
+| 构建产物 | dist/ |
+| API 代理 | Gateway → 后端微服务 |
+| 状态管理 | Vuex 3.x |
+| 路由模式 | <!-- TODO: history / hash --> |
+
+> 详细前端架构见 `frontend-architecture.md`
+
+---
+
+## 3. 后端服务清单
 
 | 服务名 | 职责 | 端口 | 数据库 | 依赖服务 | 状态 |
 |--------|------|------|--------|---------|------|
@@ -59,7 +77,7 @@ graph TB
 
 ---
 
-## 3. 跨服务调用矩阵
+## 4. 跨服务调用矩阵
 
 | 调用方 ↓ / 被调用方 → | order | user | payment | product |
 |------------------------|-------|------|---------|---------|
@@ -68,7 +86,7 @@ graph TB
 
 ---
 
-## 4. 数据存储拓扑
+## 5. 数据存储拓扑
 
 ```
 MySQL 8.0
@@ -90,7 +108,7 @@ MySQL 8.0
 
 ---
 
-## 5. Nacos 配置关键项
+## 6. Nacos 配置关键项
 
 | Data ID | Group | 说明 |
 |---------|-------|------|
@@ -102,7 +120,7 @@ MySQL 8.0
 
 ---
 
-## 6. Sentinel 限流规则基线
+## 7. Sentinel 限流规则基线
 
 | 资源 | 阈值 | 说明 |
 |------|------|------|

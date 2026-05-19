@@ -14,9 +14,11 @@
 | 研发环节 | OpenSpec 阶段 | 核心任务 | 推荐模型 | 选型逻辑 | 产出物位置 |
 |---------|--------------|---------|---------|---------|-----------|
 | **① 需求与调研** | **Explore** | 读历史代码、分析文档、梳理业务 | Kimi-k2.6, Claude 3.5/4 Sonnet 200k | 吞食大量代码库和文档，**召回率**第一 | `openspec/changes/<name>/proposal.md`<br>`project-context/01-requirement/ai-analysis/<name>.md` |
-| **② 架构与设计** | **Propose** | 系统架构、数据库设计、模块解耦 | DeepSeek-v4-pro, o1/o3, Claude 3.7 thinking | 因果推理和逻辑严密性，**准确率**优先 | `openspec/changes/<name>/design.md`<br>`openspec/changes/<name>/specs/<cap>/spec.md`<br>`project-context/02-design/<name>/` |
-| **③ 核心开发** | **Apply（攻坚）** | 复杂算法、框架层代码、性能优化 | DeepSeek-v4-pro, o3-mini-high, Claude 3.7 | 理解深层依赖和边界条件，**逻辑完整性**优先 | `openspec/changes/<name>/tasks.md` 核心任务<br>`project-context/03-core/<name>/` |
-| **④ 标准开发** | **Apply（量产）** | CRUD、API 接口、单元测试、样板代码 | Ark-code-latest, GPT-4o, Gemini 2.5 Flash | **吞吐量和响应速度**，成本敏感 | `openspec/changes/<name>/tasks.md` 标准任务<br>`project-context/04-standard/generated/` |
+| **② 架构与设计** | **Propose** | 后端架构+前端架构、数据库设计、模块解耦 | DeepSeek-v4-pro, o1/o3, Claude 3.7 thinking | 因果推理和逻辑严密性，**准确率**优先 | `openspec/changes/<name>/design.md`<br>`openspec/changes/<name>/specs/<cap>/spec.md`<br>`project-context/02-design/<name>/` |
+| **③ 核心开发（后端）** | **Apply（攻坚）** | 复杂算法、框架层代码、性能优化 | DeepSeek-v4-pro, o3-mini-high, Claude 3.7 | 理解深层依赖和边界条件，**逻辑完整性**优先 | `openspec/changes/<name>/tasks.md` 核心任务<br>`project-context/03-core/<name>/` |
+| **③ 核心开发（前端）** | **Apply（攻坚）** | 复杂交互、权限封装、SDK封装、状态管理 | DeepSeek-v4-pro, Claude 3.7 Sonnet | 理解复杂交互逻辑和组件边界，**逻辑完整性**优先 | `project-context/03-core/<name>/frontend/` |
+| **④ 标准开发（后端）** | **Apply（量产）** | CRUD、API 接口、单元测试、样板代码 | Ark-code-latest, GPT-4o, Gemini 2.5 Flash | **吞吐量和响应速度**，成本敏感 | `openspec/changes/<name>/tasks.md` 标准任务<br>`project-context/04-standard/generated/` |
+| **④ 标准开发（前端）** | **Apply（量产）** | 列表页、表单页、详情页、API对接 | Ark-code-latest, GPT-4o, Gemini 2.5 Flash | **吞吐量和响应速度**，成本敏感 | `project-context/04-standard/generated/frontend/` |
 | **⑤ 测试与 Debug** | **Apply（收尾）/ Archive** | 查日志、修 Bug、写脚本、格式化数据 | DeepSeek-v4-flash, GPT-4o-mini, Gemini Flash | **毫秒级响应**，几乎零成本 | `project-context/05-debug/bug-fixes.md` |
 
 ---
@@ -40,10 +42,11 @@
 - 历史代码库（重点看目录结构、核心实体、接口定义）
 - **微服务全景**：服务拆分图、Nacos 服务列表、Gateway 路由配置
 - **跨服务契约**：`common-api` 模块中的 Feign 接口、DTO、共享枚举
+- **前端代码库**：路由配置、Vuex Store 模块、页面组件目录结构
 - 产品需求文档 / API 文档 / 数据库字典
 - 相关 Issue / 会议纪要
 
-#### 标准 Prompt 模板
+#### 标准 Prompt 模板（后端）
 ```text
 你是一位熟悉本项目的高级架构师。请阅读以下代码库和文档，完成以下任务：
 1. 【业务理解】总结系统的核心业务流程和领域模型
@@ -62,35 +65,53 @@
 [粘贴代码片段或上传代码压缩包]
 ```
 
+#### 标准 Prompt 模板（前端）
+```text
+你是一位熟悉本项目的前端架构师。请阅读以下前端代码库和文档，完成以下任务：
+1. 【页面梳理】列出与 [XXX] 功能相关的所有页面、组件和路由
+2. 【状态管理】梳理相关 Vuex Store 模块，分析哪些状态需要新增/修改
+3. 【组件复用】识别可复用的现有组件，以及需要新建的组件
+4. 【API 对接】列出需要调用的后端接口，分析数据格式是否与前端需求匹配
+5. 【影响面分析】新增 [XXX] 功能会影响哪些页面、路由、菜单和权限
+
+【输出格式要求】
+请将分析结果追加到 OpenSpec Proposal 的 Impact 部分：
+## Impact-Frontend（影响的前端页面、组件、路由、状态）
+
+[粘贴前端代码片段或目录结构]
+```
+
 #### 输出物
-- `openspec/changes/<name>/proposal.md` — OpenSpec 标准提案（Why / What / Capabilities / Impact）
+- `openspec/changes/<name>/proposal.md` — OpenSpec 标准提案（Why / What / Capabilities / Impact + Impact-Frontend）
 - `project-context/01-requirement/ai-analysis/<name>.md` — AI 详细分析
 - 业务领域模型图（文本版 Mermaid）
 - **服务依赖拓扑图**（哪些服务调用了哪些服务）
+- **前端页面/组件/路由影响清单**
 - 待澄清问题清单（交给产品经理）
 
 #### 关键规则
 - ⚠️ **必须限定上下文范围**：微服务仓库多，优先给 `common-api` 和 Gateway 路由配置，再深入目标服务
 - ⚠️ **交叉验证**：长上下文模型有时会"幻觉"遗漏细节，关键结论需用 `grep` 或 `ripgrep` 人工二次确认
+- ⚠️ **前后端同步分析**：需求调研必须同时覆盖后端 API 和前端页面，避免前后端理解不一致
 
 ---
 
 ### 环节 ②：架构与设计（决策层）→ OpenSpec Propose
 
-**目标**：产出高可维护性的技术方案，避免后期返工。
+**目标**：产出高可维护性的技术方案（后端 + 前端），避免后期返工。
 
 #### OpenSpec 映射
 - **阶段**：Propose
 - **模型**：深度推理模型（DeepSeek-v4-pro / o3 / Claude 3.7 thinking）
 - **输入**：proposal.md + ai-analysis.md + 非功能需求
-- **输出**：`design.md` + `specs/<capability>/spec.md` + `tasks.md`
+- **输出**：`design.md` + `specs/<capability>/spec.md` + `tasks.md` + `frontend-design.md`
 - **成本**：5x baseline（推理模式仅用于设计，写代码时关闭）
 
 #### 输入
-- 环节 ① 的输出（领域模型 + 影响面）
+- 环节 ① 的输出（领域模型 + 影响面 + 前端影响清单）
 - 非功能性需求（QPS、延迟、一致性要求）
 
-#### 标准 Prompt 模板
+#### 标准 Prompt 模板（后端）
 ```text
 基于以下业务需求和技术现状，请设计技术方案：
 1. 【服务拆分】判断是否需新建服务或复用现有服务，说明理由
@@ -120,14 +141,39 @@
 - 禁止引入新的中间件/框架（除非充分说明理由，并附带迁移成本评估）
 ```
 
+#### 标准 Prompt 模板（前端）
+```text
+基于以下业务需求和后端 API 设计，请设计前端技术方案：
+1. 【页面设计】给出新增/修改的页面清单，页面布局和交互流程（用文字描述关键交互）
+2. 【路由设计】新增/修改的路由配置，含路由守卫和权限标识
+3. 【状态管理】涉及的 Vuex Store 模块，新增/修改的 state/mutation/action
+4. 【组件设计】
+   - 可复用的现有组件列表
+   - 需要新建的业务组件和基础组件
+   - 组件 Props/Events 接口定义
+5. 【API 对接】每个页面需要调用的后端接口，请求参数和响应数据映射
+6. 【交互细节】
+   - 表单校验规则
+   - 加载/空/错误状态处理
+   - 分页/搜索/筛选方案
+7. 【风险清单】列出前端侧 3 个最大风险（如接口数据格式不匹配、复杂交互性能、兼容性等）
+
+约束条件：
+- 技术栈：Vue 2.x + Vuex 3.x + Vue Router 3.x
+- UI 库：<!-- TODO: 填写 --> 
+- CSS：<!-- TODO: 填写 -->
+- 编码规范：遵循 project-context/00-global/frontend-standard.md
+```
+
 #### 输出物
 - `openspec/changes/<name>/design.md` — OpenSpec 标准设计文档（Context / Goals / Decisions / Risks）
 - `openspec/changes/<name>/specs/<capability>/spec.md` — 能力规格（WHEN/THEN）
-- `openspec/changes/<name>/tasks.md` — 实现任务清单
+- `openspec/changes/<name>/tasks.md` — 实现任务清单（含前端任务）
 - `project-context/02-design/<name>/architecture.md` — 详细架构设计
 - `project-context/02-design/<name>/api-spec.yaml` — OpenAPI 规范
 - `project-context/02-design/<name>/db-schema.sql` — 数据库变更脚本
 - `project-context/02-design/<name>/sentinel-rules.json` — 限流规则
+- `project-context/02-design/<name>/frontend-design.md` — 前端设计方案
 
 #### 质量门禁（必须人工 Review）
 - [ ] 服务拆分粒度是否合理？（避免分布式单体或过度拆分）
@@ -137,27 +183,31 @@
 - [ ] 是否引入了不必要的复杂度？
 - [ ] OpenSpec specs 中所有 Scenario 都有 WHEN/THEN？
 - [ ] tasks.md 中任务是否可执行、粒度合理？
+- [ ] 前端页面和组件设计是否与后端 API 对齐？
+- [ ] 前后端接口契约是否一致（字段名、类型、枚举值）？
 
 ---
 
 ### 环节 ③：核心开发（攻坚层）→ OpenSpec Apply
 
-**目标**：编写算法、框架层、复杂业务逻辑，要求零重大 Bug。
+**目标**：编写后端算法/框架层/复杂业务逻辑 + 前端复杂交互/权限/SDK，要求零重大 Bug。
 
 #### OpenSpec 映射
 - **阶段**：Apply（攻坚段）
-- **模型**：代码专家模型（DeepSeek-v4-pro / o3-mini-high / Claude 3.7）
-- **输入**：design.md + specs/ + 参考代码
+- **模型（后端）**：代码专家模型（DeepSeek-v4-pro / o3-mini-high / Claude 3.7）
+- **模型（前端）**：代码专家模型（DeepSeek-v4-pro / Claude 3.7 Sonnet）
+- **输入**：design.md + frontend-design.md + specs/ + 参考代码
 - **输出**：核心源码 + 复杂度分析 + 单元测试（覆盖率 ≥ 80%）
 - **成本**：5x baseline
 
 #### 输入
 - `design.md` 中的核心模块（Context + Decisions + Risks）
+- `frontend-design.md` 中的前端核心模块
 - `specs/<capability>/spec.md` 中的 WHEN/THEN 场景
 - `tasks.md` 中标记为"Core Implementation"的任务
 - 现有类似代码的参考实现（Copy-Paste 给 AI 作为风格参考）
 
-#### 标准 Prompt 模板
+#### 标准 Prompt 模板（后端）
 ```text
 请根据以下设计文档，实现 [XXX] 模块的核心代码（Java 17 + Spring Boot 3.x + SCA）。
 
@@ -185,33 +235,71 @@
 请先输出核心流程的伪代码，确认无误后再输出完整的 Java 实现代码。
 ```
 
+#### 标准 Prompt 模板（前端）
+```text
+请根据以下前端设计文档，实现 [XXX] 模块的核心前端代码（Vue 2.x + Vuex + Vue Router）。
+
+要求：
+1. 【风格一致性】参考以下现有代码的编码风格 [粘贴参考代码]，遵循 project-context/00-global/frontend-standard.md
+2. 【组件规范】
+   - 组件命名必须多词，PascalCase
+   - Props 必须定义类型和默认值
+   - 组件销毁时必须清理副作用（setTimeout / EventBus / watch）
+3. 【状态管理】
+   - 异步操作放 Action，Mutation 必须同步
+   - Store 模块按业务拆分，命名遵循 模块/动作
+4. 【权限控制】
+   - 路由权限：通过 meta 配置权限标识，路由守卫统一拦截
+   - 按钮权限：使用 v-permission 指令或权限函数
+5. 【API 对接】
+   - 接口调用使用 async/await，统一错误处理
+   - 响应数据与后端 Result<T> 对齐
+6. 【防御性编程】
+   - 所有表单必须校验（必填、格式、长度）
+   - 接口返回数据做兜底处理（避免 undefined/null 导致页面崩溃）
+   - 列表渲染必须处理空状态和加载状态
+7. 【性能】
+   - 路由懒加载：() => import()
+   - 大列表使用虚拟滚动（如需）
+   - 避免不必要的 watchers 和 computed 依赖
+8. 【安全】
+   - 禁止 v-html（除非 DOMPurify 过滤）
+   - 用户输入做 XSS 防护
+   - Token 过期自动跳转登录
+
+请先输出核心组件的伪代码/交互流程，确认无误后再输出完整的 Vue 实现代码。
+```
+
 #### 输出物
-- 核心模块源码 → `project-context/03-core/<name>/`
+- 后端核心模块源码 → `project-context/03-core/<name>/`
+- 前端核心组件源码 → `project-context/03-core/<name>/frontend/`
 - 复杂算法的复杂度分析
 - 单元测试（覆盖率 ≥ 80%）
 
 #### 关键规则
 - ⚠️ **必须要求 AI 输出"思考过程"**：让模型先写伪代码或步骤分解，再输出正式代码，能大幅降低逻辑错误
 - ⚠️ **禁止直接合入**：核心代码必须经过 Code Review 或至少让另一个 AI 模型做"对抗性审查"
+- ⚠️ **前后端核心代码需交叉 Review**：前端核心组件需确认后端接口契约一致性，后端需确认前端数据消费方式
 
 ---
 
 ### 环节 ④：标准开发（量产层）→ OpenSpec Apply
 
-**目标**：快速产出 CRUD、DTO、Converter、单元测试等样板代码。
+**目标**：快速产出后端 CRUD/DTO/Converter + 前端列表页/表单页/详情页等样板代码。
 
 #### OpenSpec 映射
 - **阶段**：Apply（量产后段）
 - **模型**：高速代码模型（Ark-code-latest / GPT-4o / Gemini Flash）
-- **输入**：api-spec.yaml + 数据库表结构
-- **输出**：全套标准代码文件 + Feign 接口 + 单元测试
+- **输入**：api-spec.yaml + 数据库表结构 + frontend-design.md
+- **输出**：全套后端标准代码 + 前端页面代码 + 单元测试
 - **成本**：1x baseline（批量生成减少往返）
 
 #### 输入
 - `api-spec.yaml`
 - 数据库表结构
+- `frontend-design.md` 中的页面清单和组件设计
 
-#### 标准 Prompt 模板
+#### 标准 Prompt 模板（后端）
 ```text
 根据以下 OpenAPI 规范和表结构，生成完整的 Java 代码（Spring Boot 3.x + MyBatis-Plus + SCA）：
 
@@ -249,34 +337,66 @@
 - 不要写注释，代码自解释即可（追求速度）
 ```
 
+#### 标准 Prompt 模板（前端）
+```text
+根据以下后端 API 规范和前端设计，生成完整的 Vue 2 页面代码：
+
+生成内容：
+- API 请求文件（src/api/xxx.js）：
+  - 每个接口一个函数，返回 Promise
+  - 使用项目封装的 request 方法
+- 页面组件（src/views/xxx/List.vue / Form.vue / Detail.vue）：
+  - 列表页：搜索栏 + 表格 + 分页，含 loading/empty 状态
+  - 表单页：新增/编辑复用，含表单校验
+  - 详情页：信息展示，含返回按钮
+- Vuex Store（如需）：
+  - state / getters / mutations / actions 标准结构
+- 路由配置（src/router/modules/xxx.js）：
+  - 懒加载 () => import()
+  - meta 含 title 和权限标识
+
+要求：
+- 严格遵循 project-context/00-global/frontend-standard.md 编码规范
+- 使用 UI 库组件（<!-- TODO: 填写 UI 库名 -->）
+- 响应数据与后端 Result<T> 对齐：res.data.data 为业务数据
+- 分页参数与后端对齐：{ current, size }
+- 表单校验规则完整（必填、格式、长度）
+- 列表页必须处理：搜索重置、分页切换、loading 状态、空数据
+- 表单页必须处理：新增/编辑模式切换、提交前校验、提交后刷新列表
+- 使用 scoped 样式，遵循 BEM / kebab-case 命名
+```
+
 #### 输出物
-- 全套标准代码文件 → `project-context/04-standard/generated/`
+- 后端全套标准代码文件 → `project-context/04-standard/generated/`
 - `common-api` 模块的 Feign 接口 + DTO
+- 前端页面代码文件 → `project-context/04-standard/generated/frontend/`
 - 单元测试文件
 
 #### 关键规则
 - ✅ **允许 AI 直接生成后人工快速 Review**：重点检查字段映射、空指针、SQL 注入风险、Feign 路径是否正确
 - ✅ **批量生成**：一次生成一个完整模块的所有样板代码，比单文件生成效率更高
+- ✅ **前后端批量联调**：后端 API + 前端页面一起生成，减少前后端接口对不齐的问题
 
 ---
 
 ### 环节 ⑤：测试与 Debug（响应层）→ OpenSpec Apply / Archive
 
-**目标**：快速定位问题、修复线上 Bug、编写临时脚本。
+**目标**：快速定位问题、修复线上 Bug、编写临时脚本（后端 + 前端）。
 
 #### OpenSpec 映射
 - **阶段**：Apply（收尾）→ Archive
 - **模型**：轻量快反模型（DeepSeek-v4-flash / GPT-4o-mini / Gemini Flash）
-- **输入**：日志（脱敏后）+ Stack Trace + 代码片段
+- **输入**：日志（脱敏后）+ Stack Trace + 浏览器控制台报错 + 代码片段
 - **输出**：修复代码 + `bug-fixes.md`
 - **成本**：0.1x baseline（无限使用）
 
 #### 输入
 - 错误日志 / Stack Trace（多服务日志，需通过 trace_id 串联）
+- 前端浏览器控制台报错 / 网络请求错误（脱敏后）
 - 相关代码片段
 - Skywalking / Zipkin 链路追踪截图（如有）
 
-#### 标准 Prompt 模板（查 Bug）
+#### 标准 Prompt 模板（后端查 Bug）
 ```text
 以下是生产环境的错误日志和相关代码，请分析根因并给出修复方案。
 日志已按 trace_id 聚合：
@@ -297,6 +417,25 @@ trace_id: xxx
 3. 说明如何预防此类问题再次发生（如加 Sentinel 规则、补 Fallback、加幂等）
 ```
 
+#### 标准 Prompt 模板（前端查 Bug）
+```text
+以下是前端页面报错和相关代码，请分析根因并给出修复方案。
+
+【浏览器控制台报错】
+[粘贴报错信息]
+
+【网络请求】
+[粘贴失败请求的 URL / 状态码 / 响应体]
+
+【相关代码】
+[粘贴组件代码 / API 调用代码]
+
+要求：
+1. 先给出根因判断（用 1-2 句话概括，定位到具体组件和方法）
+2. 给出修复后的代码（仅修改必要部分，用 diff 格式标注）
+3. 说明如何预防此类问题（如加空值兜底、加 loading 防重复提交、加错误边界）
+```
+
 #### 标准 Prompt 模板（写脚本）
 ```text
 请写一段 Python/Bash 脚本，功能：[描述需求]
@@ -308,6 +447,7 @@ trace_id: xxx
 
 #### 关键规则
 - ⚠️ **日志脱敏**：给 AI 日志前，必须手动替换手机号、Token、密码等敏感信息
+- ⚠️ **前端报错脱敏**：浏览器 Network 中的 Cookie、Authorization 头需脱敏
 - ✅ **快问快答**：这一层完全不需要长上下文，追求的就是秒级响应，用最小模型即可
 
 ---
@@ -333,31 +473,37 @@ trace_id: xxx
 │
 └── project-context/                   # 【项目级】全局上下文
     ├── 00-global/                     # 全局规范基线
-    │   ├── architecture-baseline.md   # 微服务全景架构
-    │   ├── coding-standard.md         # 编码规范速查
+    │   ├── architecture-baseline.md   # 全栈架构（后端微服务 + 前端）
+    │   ├── frontend-architecture.md   # 前端架构基线（Vue 2）
+    │   ├── frontend-standard.md       # 前端编码规范速查
+    │   ├── coding-standard.md         # 后端编码规范速查
     │   └── api-conventions.yaml       # API 全局约定
     ├── 01-requirement/
     │   ├── prd/                       # 原始需求文档
-    │   └── ai-analysis/<name>.md      # 环节① AI 详细分析
+    │   └── ai-analysis/<name>.md      # 环节① AI 详细分析（含前端影响）
     ├── 02-design/<name>/
     │   ├── architecture.md            # 详细架构设计
+    │   ├── frontend-design.md         # 前端设计方案
     │   ├── api-spec.yaml              # OpenAPI 规范
     │   ├── db-schema.sql              # 数据库变更
     │   └── sentinel-rules.json        # 限流规则
     ├── 03-core/<name>/                # 环节③ 核心代码
+    │   └── frontend/                  #   前端核心组件
     ├── 04-standard/
-    │   ├── generated/                 # 环节④ 可重生成代码
+    │   ├── generated/                 # 环节④ 后端可重生成代码
+    │   │   └── frontend/              #   前端可重生成代码
     │   └── common-api/                # 跨服务 Feign 接口 + DTO
     └── 05-debug/
-        └── bug-fixes.md               # Bug 复盘记录
+        └── bug-fixes.md               # Bug 复盘记录（前后端）
 ```
 
 ### 规则
 1. **下游环节必须读取上游输出**：例如环节 ③ 的 Prompt 开头必须包含 "基于设计文档 [粘贴 design.md 核心内容]..."
-2. **禁止跨环节直接给原始需求**：如果让标准开发模型直接读原始需求，它可能会忽略架构约束（如分布式事务、幂等性要求）
+2. **禁止跨环节直接给原始需求**：如果让标准开发模型直接读原始需求，它可能会忽略架构约束（如分布式事务、幂等性要求、前端组件规范）
 3. **OpenSpec Artifact 必须完整**：每个变更必须有 proposal → design → specs → tasks，缺一不可才能进入 Apply 阶段
 4. **定期归档**：迭代结束后执行 `openspec archive <change-name>`，同步 specs 到 `openspec/specs/`，将 `ai-analysis.md` 和 `design.md` 存入向量数据库作为 RAG 知识库
-5. **项目级基线同步**：若变更新增服务/接口/全局规范，必须更新 `project-context/00-global/` 下的对应文件
+5. **项目级基线同步**：若变更新增服务/接口/全局规范/前端页面/路由，必须更新 `project-context/00-global/` 下的对应文件
+6. **前后端上下文同步**：环节②必须同时产出后端设计和前端设计，确保接口契约一致
 
 ---
 
@@ -369,12 +515,14 @@ trace_id: xxx
 
 | 检查项 | 检查内容 | 对应文件 |
 |--------|---------|---------|
-| **提案完整性** | Why / What / Capabilities / Impact 是否完整 | `proposal.md` |
+| **提案完整性** | Why / What / Capabilities / Impact（含前端影响）是否完整 | `proposal.md` |
 | **规格完整性** | 所有 Scenario 都有 WHEN/THEN，无遗漏 | `specs/<cap>/spec.md` |
 | **设计完整性** | Context / Goals / Decisions / Risks 是否齐全 | `design.md` |
+| **前端设计完整性** | 页面/路由/组件/状态管理/API 对接是否齐全 | `frontend-design.md` |
 | **任务可执行性** | tasks.md 中每个任务粒度合理、可独立执行 | `tasks.md` |
 | **架构合规性** | 服务拆分合理，数据库设计满足规范 | `architecture.md` |
 | **接口规范性** | API Spec 符合 api-conventions.yaml 全局约定 | `api-spec.yaml` |
+| **前后端契约一致性** | 前端请求参数/响应数据与后端 API Spec 对齐 | `api-spec.yaml` + `frontend-design.md` |
 
 ### Archive 归档流程
 

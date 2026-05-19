@@ -1,6 +1,7 @@
 # Java + Spring Cloud Alibaba 编码规范速查表
 
 > 精简自《AI驱动研发流程-模型匹配方案.md》附录 A，作为 AI Prompt 的标准上下文
+> 前端编码规范见 `frontend-standard.md`
 
 ---
 
