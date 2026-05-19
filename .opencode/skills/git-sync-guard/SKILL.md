@@ -41,6 +41,15 @@ Before making any file changes in a git-tracked project, always perform these st
 - Never force push or reset without explicit user approval.
 - After completing edits and the user asks to push, always run `git pull` before pushing to avoid rejected pushes.
 
+## Push to Remote
+
+- After committing, NEVER push automatically. Always show the user the diff (`git diff <base>..HEAD`) and ask for confirmation before pushing.
+- Push flow:
+  1. Show diff summary to user
+  2. Wait for user approval
+  3. `git pull origin <current-branch>` (pre-push safety)
+  4. `git push origin <current-branch>`
+
 ## Quick Reference
 
 ```bash
