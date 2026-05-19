@@ -7,9 +7,9 @@
 
 ---
 
-## 一、总体架构：五层模型矩阵
+## 一、总体架构：六层模型矩阵
 
-把研发流程拆解为 5 个环节，每个环节匹配最适合的 AI 特性：
+把研发流程拆解为 6 个环节，每个环节匹配最适合的 AI 特性：
 
 | 研发环节 | OpenSpec 阶段 | 核心任务 | 推荐模型 | 选型逻辑 | 产出物位置 |
 |---------|--------------|---------|---------|---------|-----------|
@@ -19,7 +19,8 @@
 | **③ 核心开发（前端）** | **Apply（攻坚）** | 复杂交互、权限封装、SDK封装、状态管理 | DeepSeek-v4-pro, Claude 3.7 Sonnet | 理解复杂交互逻辑和组件边界，**逻辑完整性**优先 | `project-context/03-core/<name>/frontend/` |
 | **④ 标准开发（后端）** | **Apply（量产）** | CRUD、API 接口、单元测试、样板代码 | Ark-code-latest, GPT-4o, Gemini 2.5 Flash | **吞吐量和响应速度**，成本敏感 | `openspec/changes/<name>/tasks.md` 标准任务<br>`project-context/04-standard/generated/` |
 | **④ 标准开发（前端）** | **Apply（量产）** | 列表页、表单页、详情页、API对接 | Ark-code-latest, GPT-4o, Gemini 2.5 Flash | **吞吐量和响应速度**，成本敏感 | `project-context/04-standard/generated/frontend/` |
-| **⑤ 测试与 Debug** | **Apply（收尾）/ Archive** | 查日志、修 Bug、写脚本、格式化数据 | DeepSeek-v4-flash, GPT-4o-mini, Gemini Flash | **毫秒级响应**，几乎零成本 | `project-context/05-debug/bug-fixes.md` |
+| **⑤ 测试与 Debug** | **Apply（收尾）** | 查日志、修 Bug、写脚本、格式化数据 | DeepSeek-v4-flash, GPT-4o-mini, Gemini Flash | **毫秒级响应**，几乎零成本 | `project-context/05-debug/bug-fixes.md` |
+| **⑥ 前后端联调验证** | **Apply（收尾）→ Archive** | 契约校验、Schema 验证、联调报告 | DeepSeek-v4-flash, GPT-4o-mini | **毫秒级响应**，几乎零成本 | `tests/contract/reports/`<br>`src/utils/schema-guard/` |
 
 ---
 
@@ -449,6 +450,88 @@ trace_id: xxx
 - ⚠️ **日志脱敏**：给 AI 日志前，必须手动替换手机号、Token、密码等敏感信息
 - ⚠️ **前端报错脱敏**：浏览器 Network 中的 Cookie、Authorization 头需脱敏
 - ✅ **快问快答**：这一层完全不需要长上下文，追求的就是秒级响应，用最小模型即可
+
+---
+
+### 环节 ⑥：前后端联调验证 → OpenSpec Apply（收尾）→ Archive
+
+**目标**：确保前后端接口契约完全对齐，消除联调阶段的"字段对不齐"问题。
+
+#### 验证层次
+
+| 阶段 | 工具 | 时机 | 职责 |
+|------|------|------|------|
+| **开发阶段（实时）** | `dev-schema-guard` | 前端写代码时 | axios 拦截器实时校验，字段不对立即红屏 |
+| **联调阶段（总验收）** | `contract-verify` | 前后端都跑起来后 | 读 api-spec.yaml → 逐接口验证 → 出报告 |
+| **Archive 前（终验）** | `contract-verify` | 归档前 | 契约全通过才能归档 |
+
+#### 方案 A：contract-verify（联调总验收）
+
+```text
+工作流：api-spec.yaml → 解析接口清单 → 登录获取 Token → 逐接口发请求 → AJV 校验响应 → 输出报告
+
+校验内容：
+1. 响应状态码是否与 spec 一致
+2. Result<T> 包装结构是否完整（code / message / data）
+3. data 中字段是否齐全、类型是否正确
+4. 必填字段是否都存在
+5. null/undefined 字段预警（前端需做空值兜底）
+
+输出：
+- ✅ PASS / ❌ FAIL 每个接口
+- 不一致的字段详情
+- 前端影响评估
+```
+
+详见 skill: `contract-verify`
+
+#### 方案 C：dev-schema-guard（开发实时校验）
+
+```text
+工作流：前端发请求 → axios 拦截器 → 查找该接口 Schema → AJV 校验 → 报错/通过
+
+校验内容：
+1. 响应体字段是否与注册的 Schema 一致
+2. 字段类型是否匹配
+3. 必填字段是否缺失
+
+报错方式：
+- console.error 红字（带完整错误路径和实际响应）
+- 页面右上角红色浮层（8 秒自动消失）
+- 仅开发环境生效，生产环境不注册
+```
+
+详见 skill: `dev-schema-guard`
+
+#### 标准 Prompt 模板（生成 Schema）
+
+```text
+根据以下 api-spec.yaml，生成前端 dev-schema-guard 的 schemas.js 和 contract-verify 的 fixtures 数据：
+
+要求：
+1. schemas.js：为每个接口生成响应 Schema（JSON Schema 格式），字段类型和 required 与 spec 严格一致
+2. fixtures：为每个 POST/PUT/PATCH 接口生成测试请求体 JSON
+
+[粘贴 api-spec.yaml 内容]
+```
+
+#### 输出物
+- `tests/contract/contract-verify.js` — 联调验证脚本
+- `tests/contract/config.js` — 环境配置
+- `tests/contract/fixtures/*.json` — 测试数据
+- `src/utils/schema-guard/schemas.js` — 前端 Schema 注册表
+- `tests/contract/reports/contract-report-<date>.json` — 验证报告
+
+#### 质量门禁
+- [ ] contract-verify 全部 PASS（Archive 前必须满足）
+- [ ] dev-schema-guard 开发阶段无新增报错
+- [ ] 测试数据 fixtures 覆盖所有写接口
+
+#### 关键规则
+- ⚠️ **前后端都跑起来才能跑 contract-verify**：需要后端服务 + 数据库可用
+- ⚠️ **dev-schema-guard 仅开发环境**：`NODE_ENV === 'development'` 才注册，生产不打包
+- ✅ **渐进式添加 Schema**：优先配核心接口和频繁变更的接口，不需要一次配齐
+- ✅ **改接口必须同步**：后端改字段，同步更新 schemas.js 和 api-spec.yaml
 
 ---
 

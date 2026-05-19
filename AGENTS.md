@@ -18,6 +18,7 @@ AI 生成的所有文档必须符合 OpenSpec 格式，走 Explore → Propose �
 | **④ 标准开发（后端）** | **Apply（量产）** | Ark-code-latest / GPT-4o / Gemini Flash | 追求吞吐量和响应速度 | CRUD/API/UT 样板代码 |
 | **④ 标准开发（前端）** | **Apply（量产）** | Ark-code-latest / GPT-4o / Gemini Flash | 追求吞吐量和响应速度 | 列表页/表单页/详情页 样板代码 |
 | **⑤ 测试 Debug** | **Apply（收尾）** / Archive | DeepSeek-v4-flash / GPT-4o-mini | 毫秒级响应，几乎零成本 | 修复代码 + `bug-fixes.md` |
+| **⑥ 前后端联调验证** | **Apply（收尾）→ Archive** | DeepSeek-v4-flash / GPT-4o-mini | 契约校验 + 联调报告 | 契约验证报告 + Schema 拦截器 |
 
 ---
 
@@ -48,8 +49,19 @@ AI 生成的所有文档必须符合 OpenSpec 格式，走 Explore → Propose �
 - 环节③ 核心代码禁止直接合入，必须经过 Code Review 或对抗性审查
 - 环节④ 允许 AI 直接生成后人工快速 Review
 - 环节⑤ 日志脱敏后再给 AI；前端需提供浏览器控制台报错 + 网络请求
+- 环节⑥ 前后端联调验证：开发阶段用 dev-schema-guard 实时校验，联调阶段用 contract-verify 总验收
 - 全局规范文件位于 `project-context/00-global/`，所有 AI 调用应将其作为 system prompt 上下文
 - 前端编码规范见 `project-context/00-global/frontend-standard.md`，前端架构见 `project-context/00-global/frontend-architecture.md`
+
+---
+
+## 前后端联调验证（环节⑥）
+
+| 阶段 | 工具 | 时机 | 说明 |
+|------|------|------|------|
+| 开发阶段 | `dev-schema-guard` | 前端开发时实时 | axios 拦截器校验响应 Schema，字段不对立即红屏提示 |
+| 联调阶段 | `contract-verify` | 前后端都跑起来后 | 读 api-spec.yaml → 逐接口发请求 → AJV 校验 → 出报告 |
+| Archive 前 | `contract-verify` | 最终验收 | 契约全通过才能归档 |
 
 ---
 
