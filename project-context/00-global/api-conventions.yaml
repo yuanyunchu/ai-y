@@ -42,6 +42,15 @@ x-global-conventions:
       404: 资源不存在
       500: 系统内部错误
 
+    business_error_codes:
+      range: 4000-4999
+      pattern: "4xxx"
+      examples:
+        4001: 业务规则校验失败（如积分不足、库存不足）
+        4002: 数据冲突（如重复提交、唯一约束冲突）
+        4003: 数据状态不允许操作（如订单已取消不能支付）
+      rule: 各服务在 4000-4999 范围内自定义，需在 api-spec.yaml 中声明
+
   # 4. 分页规范
   pagination:
     request:

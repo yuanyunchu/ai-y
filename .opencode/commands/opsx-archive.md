@@ -43,7 +43,31 @@ Archive a completed change in the experimental workflow.
 
    **If no tasks file exists:** Proceed without task-related warning.
 
-4. **Assess delta spec sync state**
+4. **Check contract verification status (环节⑥ 门禁)**
+
+   Check for the latest contract verification report at `tests/contract/reports/contract-report-*.json`.
+
+   **If report exists:**
+   - Read the latest report and check if all endpoints have `status: "PASS"`
+   - **If any FAIL:** Display warning listing failed endpoints and their errors. Prompt user: "Contract verification has failures. Fix before archive (recommended) / Archive anyway"
+   - **If all PASS:** Display "Contract verification: ✓ All passed" and proceed
+
+   **If no report exists:**
+   - Display warning: "No contract verification report found. Run contract-verify before archive (recommended)."
+   - Prompt user: "Skip contract verification / Archive anyway"
+
+5. **Check project-context baseline sync**
+
+   Check if the change introduces new services, APIs, or global conventions that require updating `project-context/00-global/`:
+
+   - Read `openspec/changes/<name>/proposal.md` — check Impact section for new services/APIs
+   - Read `openspec/changes/<name>/design.md` — check for new global conventions
+   - **If updates needed:**
+     - List which files in `project-context/00-global/` need updating (architecture-baseline.md, api-conventions.yaml, frontend-architecture.md, etc.)
+     - Prompt user: "Update baseline now (recommended) / Archive without updating"
+   - **If no updates needed:** Proceed
+
+6. **Assess delta spec sync state**
 
    Check for delta specs at `openspec/changes/<name>/specs/`. If none exist, proceed without sync prompt.
 
@@ -58,7 +82,7 @@ Archive a completed change in the experimental workflow.
 
    If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
 
-5. **Perform the archive**
+7. **Perform the archive**
 
    Create the archive directory if it doesn't exist:
    ```bash
@@ -75,12 +99,14 @@ Archive a completed change in the experimental workflow.
    mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
    ```
 
-6. **Display summary**
+8. **Display summary**
 
    Show archive completion summary including:
    - Change name
    - Schema that was used
    - Archive location
+   - Contract verification status (passed / skipped / failed)
+   - Baseline sync status (updated / skipped / not needed)
    - Spec sync status (synced / sync skipped / no delta specs)
    - Note about any warnings (incomplete artifacts/tasks)
 
@@ -92,6 +118,8 @@ Archive a completed change in the experimental workflow.
 **Change:** <change-name>
 **Schema:** <schema-name>
 **Archived to:** openspec/changes/archive/YYYY-MM-DD-<name>/
+**Contract Verify:** ✓ All passed
+**Baseline:** ✓ Updated
 **Specs:** ✓ Synced to main specs
 
 All artifacts complete. All tasks complete.
@@ -105,6 +133,8 @@ All artifacts complete. All tasks complete.
 **Change:** <change-name>
 **Schema:** <schema-name>
 **Archived to:** openspec/changes/archive/YYYY-MM-DD-<name>/
+**Contract Verify:** ✓ All passed
+**Baseline:** Not needed
 **Specs:** No delta specs
 
 All artifacts complete. All tasks complete.
@@ -123,6 +153,8 @@ All artifacts complete. All tasks complete.
 **Warnings:**
 - Archived with 2 incomplete artifacts
 - Archived with 3 incomplete tasks
+- Contract verification was skipped (user chose to skip)
+- Baseline update was skipped (user chose to skip)
 - Delta spec sync was skipped (user chose to skip)
 
 Review the archive if this was not intentional.

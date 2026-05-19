@@ -95,7 +95,7 @@ src/
 
 ### 4.2 命名规范
 
--模块命名: `模块名/动作`（如 `user/setToken`、`order/setList`）
+- 模块命名: `模块名/动作`（如 `user/setToken`、`order/setList`）
 - getters 命名: `模块名 + 实体`（如 `user/token`、`order/currentOrder`）
 
 ---

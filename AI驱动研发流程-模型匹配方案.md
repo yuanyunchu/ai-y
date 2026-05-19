@@ -485,7 +485,7 @@ trace_id: xxx
 
 详见 skill: `contract-verify`
 
-#### 方案 C：dev-schema-guard（开发实时校验）
+#### 方案 B：dev-schema-guard（开发实时校验）
 
 ```text
 工作流：前端发请求 → axios 拦截器 → 查找该接口 Schema → AJV 校验 → 报错/通过
@@ -753,7 +753,7 @@ xxx-service/                      # 业务服务根模块
 | URL | kebab-case | `/user-orders/{order-id}` |
 | 数据库表 | snake_case | `user_order` |
 | 数据库字段 | snake_case | `created_at` |
-| Feign 接口 | 以 `Feign` 结尾 | `OrderFeignClient` |
+| Feign 接口 | 以 `FeignClient` 结尾 | `OrderFeignClient` |
 | FallbackFactory | 以 `FallbackFactory` 结尾 | `OrderFeignClientFallbackFactory` |
 | common-api 模块 | 以 `-api` 结尾 | `order-api` |
 
@@ -950,6 +950,6 @@ public void createOrder(CreateOrderDTO dto) {
 
 ---
 
-> 文档维护人：@待填写
+> 文档维护人：架构组
 > 最后更新：2026-05-18
 > 下次评审：待安排

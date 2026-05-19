@@ -44,7 +44,7 @@ xxx-service/
 | URL | kebab-case | `/user-orders/{order-id}` |
 | 数据库表 | snake_case | `user_order` |
 | 数据库字段 | snake_case | `created_at` |
-| Feign 接口 | 以 Feign 结尾 | `OrderFeignClient` |
+| Feign 接口 | 以 FeignClient 结尾 | `OrderFeignClient` |
 | FallbackFactory | 以 FallbackFactory 结尾 | `OrderFeignClientFallbackFactory` |
 | common-api 模块 | 以 -api 结尾 | `order-api` |
 
