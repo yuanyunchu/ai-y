@@ -15,13 +15,13 @@ Before making any file changes in a git-tracked project, always perform these st
    - Is the branch ahead/behind remote?
 
 2. **Check remote sync**: Run `git fetch origin && git status` to see if the local branch is behind the remote. If behind:
-   - If there are NO local uncommitted changes: `git pull --rebase origin <branch>`
+   - If there are NO local uncommitted changes: `git pull origin <branch>`
    - If there ARE local uncommitted changes: stash first, pull, then pop:
-     ```
-     git stash
-     git pull --rebase origin <branch>
-     git stash pop
-     ```
+      ```
+      git stash
+      git pull origin <branch>
+      git stash pop
+      ```
    - If stash pop has conflicts, report to user and ask how to resolve.
 
 3. **Check branch**: Verify you're on the correct branch. If the user mentions a feature branch, switch to it first.
@@ -39,7 +39,7 @@ Before making any file changes in a git-tracked project, always perform these st
 - If there are conflicts during pull/stash-pop, STOP and inform the user. Do not attempt auto-resolution.
 - If the remote doesn't exist or network fails, warn the user but proceed with local edits.
 - Never force push or reset without explicit user approval.
-- After completing edits and the user asks to push, always run `git pull --rebase` before pushing to avoid rejected pushes.
+- After completing edits and the user asks to push, always run `git pull` before pushing to avoid rejected pushes.
 
 ## Quick Reference
 
@@ -48,11 +48,11 @@ Before making any file changes in a git-tracked project, always perform these st
 git fetch origin && git status
 
 # Full sync (when behind remote, clean working tree)
-git pull --rebase origin <current-branch>
+git pull origin <current-branch>
 
 # Sync with dirty working tree
-git stash && git pull --rebase origin <current-branch> && git stash pop
+git stash && git pull origin <current-branch> && git stash pop
 
 # Pre-push safety
-git pull --rebase origin <current-branch> && git push origin <current-branch>
+git pull origin <current-branch> && git push origin <current-branch>
 ```
