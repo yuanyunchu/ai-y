@@ -1,0 +1,83 @@
+# API 全局规范约定
+# 所有 AI 生成代码必须遵循此规范
+
+openapi: "3.0.3"
+info:
+  title: codexx API Conventions
+  version: "1.0.0"
+  description: |
+    全局 API 规范基线，所有微服务 API 必须遵守。
+    变更级 API Spec 存放于 project-context/02-design/<change-name>/api-spec.yaml
+
+# ============================================================
+# 全局规范（非具体接口定义，而是 AI 生成代码时的约束）
+# ============================================================
+
+x-global-conventions:
+
+  # 1. URL 规范
+  url:
+    style: kebab-case
+    version_prefix: /api/v1
+    examples:
+      - /api/v1/user-orders/{order-id}
+      - /api/v1/points-accounts/{userId}
+
+  # 2. HTTP 方法语义
+  http_methods:
+    GET: 查询（必须幂等）
+    POST: 创建
+    PUT: 全量更新
+    PATCH: 部分更新
+    DELETE: 删除
+
+  # 3. 统一响应体
+  response_body:
+    wrapper: Result<T>  # code + message + data + timestamp
+    success_code: 200
+    common_error_codes:
+      400: 参数校验失败
+      401: 未认证
+      403: 无权限
+      404: 资源不存在
+      500: 系统内部错误
+
+  # 4. 分页规范
+  pagination:
+    request:
+      current: integer  # 当前页（从 1 开始）
+      size: integer     # 每页条数（默认 20，最大 100）
+    response:
+      records: array    # 数据列表
+      total: integer    # 总记录数
+      pages: integer    # 总页数
+
+  # 5. 日期格式
+  datetime:
+    format: ISO-8601   # yyyy-MM-dd'T'HH:mm:ss.SSSZ
+    timezone: Asia/Shanghai
+
+  # 6. 数据脱敏规范
+  sensitive_fields:
+    password: "******"         # 返回时永远脱敏
+    phone: "138****1234"       # 中间四位隐藏
+    id_card: "3201**********1234"  # 中间隐藏
+
+  # 7. Feign 调用规范（内部服务间通信）
+  feign:
+    package: com.codexx.xxx.api.feign
+    naming: <Service>FeignClient
+    fallback: 必须配置 FallbackFactory
+    timeout:
+      connect: 3000ms
+      read: 5000ms
+    retry:
+      max_attempts: 2
+    headers:
+      X-Trace-Id: 由 Micrometer Tracing 自动传递
+
+  # 8. 幂等控制
+  idempotency:
+    mechanism: 数据库唯一索引 + 业务单号
+    unique_key: uk_{table}_{biz_type}_{biz_id}
+    fallback: Redis Token（适用于无法建索引的场景）

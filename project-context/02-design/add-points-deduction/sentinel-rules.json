@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "change": "add-points-deduction",
+  "updated": "2026-05-19",
+  "rules": [
+    {
+      "resource": "POST:/points/freeze",
+      "grade": "QPS",
+      "count": 200,
+      "controlBehavior": "REJECT",
+      "description": "积分冻结接口限流，每秒最多 200 次请求"
+    },
+    {
+      "resource": "POST:/points/deduct",
+      "grade": "QPS",
+      "count": 200,
+      "controlBehavior": "REJECT",
+      "description": "积分扣减接口限流"
+    },
+    {
+      "resource": "POST:/points/unfreeze",
+      "grade": "QPS",
+      "count": 200,
+      "controlBehavior": "REJECT",
+      "description": "积分解冻接口限流"
+    },
+    {
+      "resource": "POST:/points/freeze",
+      "grade": "DEGRADE_EXCEPTION_RATIO",
+      "count": 0.5,
+      "timeWindow": 10,
+      "minRequestAmount": 5,
+      "description": "积分冻结错误率超过 50% 时熔断 10 秒"
+    },
+    {
+      "resource": "POST:/points/freeze",
+      "grade": "DEGRADE_SLOW_REQUEST_RATIO",
+      "count": 0.5,
+      "timeWindow": 10,
+      "minRequestAmount": 5,
+      "slowRatioThreshold": 0.5,
+      "maxAllowedRtMs": 500,
+      "description": "积分冻结慢请求超过 50%（>500ms）时熔断 10 秒"
+    },
+    {
+      "resource": "POST:/orders",
+      "grade": "QPS",
+      "count": 200,
+      "controlBehavior": "REJECT",
+      "description": "订单创建接口限流（已有规则，本次确认无误）"
+    }
+  ],
+  "fallbackStrategies": {
+    "POST:/points/freeze": {
+      "whenServiceUnavailable": {
+        "code": 5030,
+        "message": "积分服务暂不可用，请使用全额支付或稍后重试",
+        "action": "提示用户选择全额支付方式"
+      }
+    },
+    "POST:/points/deduct": {
+      "whenServiceUnavailable": {
+        "code": 5030,
+        "message": "积分扣减处理中，将异步重试",
+        "action": "记录待重试任务，通过 MQ 延迟消息重试"
+      }
+    }
+  }
+}

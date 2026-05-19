@@ -1,0 +1,289 @@
+openapi: "3.0.3"
+info:
+  title: 积分抵扣 API（add-points-deduction）
+  version: "1.0.0"
+  description: |
+    本次变更新增和修改的 API 规格。
+    全局约定（返回体 wrapper、分页规范、日期格式等）见 project-context/00-global/api-conventions.yaml
+
+servers:
+  - url: /api/v1
+    description: 通过 Gateway 统一入口
+
+paths:
+
+  # ============================================================
+  # 新增：积分账户查询
+  # ============================================================
+  /points/accounts/{userId}:
+    get:
+      tags: [Points]
+      operationId: getPointsAccount
+      summary: 查询用户积分余额
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Result_PointsAccountVO"
+      x-feign:
+        interface: PointsFeignClient
+        fallback:
+          class: PointsFeignClientFallbackFactory
+          response:
+            code: 503
+            message: "积分服务暂不可用"
+
+  # ============================================================
+  # 新增：积分冻结（订单创建时调用）
+  # ============================================================
+  /points/freeze:
+    post:
+      tags: [Points]
+      operationId: freezePoints
+      summary: 冻结积分
+      description: 订单创建时调用，预占积分，支付成功后扣减，失败/取消后解冻
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FreezePointsDTO"
+      responses:
+        "200":
+          description: 冻结成功
+        "400":
+          description: 积分余额不足 / 抵扣超限
+      x-idempotency:
+        key: biz_id + biz_type + operation_type
+        mechanism: database_unique_index
+      x-sentinel:
+        qps_limit: 200
+        fallback: "积分服务繁忙，请稍后重试"
+
+  # ============================================================
+  # 新增：积分扣减（支付成功后调用）
+  # ============================================================
+  /points/deduct:
+    post:
+      tags: [Points]
+      operationId: deductPoints
+      summary: 扣减积分
+      description: 支付成功回调时调用，仅限从 FROZEN → DEDUCTED
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeductPointsDTO"
+      responses:
+        "200":
+          description: 扣减成功
+      x-idempotency:
+        key: biz_id + biz_type + operation_type
+        mechanism: database_unique_index
+
+  # ============================================================
+  # 新增：积分解冻（订单取消/超时时调用）
+  # ============================================================
+  /points/unfreeze:
+    post:
+      tags: [Points]
+      operationId: unfreezePoints
+      summary: 解冻积分
+      description: 订单超时或取消时调用，仅限从 FROZEN → AVAILABLE
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnfreezePointsDTO"
+      responses:
+        "200":
+          description: 解冻成功
+      x-idempotency:
+        key: biz_id + biz_type + operation_type
+        mechanism: database_unique_index
+
+  # ============================================================
+  # 修改：订单创建接口
+  # ============================================================
+  /orders:
+    post:
+      tags: [Order]
+      operationId: createOrder
+      summary: 创建订单（新增积分抵扣参数）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderDTO"
+      responses:
+        "200":
+          description: 订单创建成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Result_OrderVO"
+        "400":
+          description: 参数校验失败 / 积分不足 / 抵扣超限
+
+# ============================================================
+# Schemas
+# ============================================================
+components:
+  schemas:
+
+    # --- 积分相关 DTO/VO ---
+
+    FreezePointsDTO:
+      type: object
+      required: [userId, points, bizId]
+      properties:
+        userId:
+          type: integer
+          format: int64
+        points:
+          type: integer
+          minimum: 1
+          description: 冻结积分数量
+        bizId:
+          type: string
+          description: 业务单号（订单号，用于幂等）
+
+    DeductPointsDTO:
+      type: object
+      required: [userId, points, bizId]
+      properties:
+        userId:
+          type: integer
+          format: int64
+        points:
+          type: integer
+        bizId:
+          type: string
+          description: 业务单号
+
+    UnfreezePointsDTO:
+      type: object
+      required: [userId, points, bizId]
+      properties:
+        userId:
+          type: integer
+          format: int64
+        points:
+          type: integer
+        bizId:
+          type: string
+
+    PointsDeductionDTO:
+      type: object
+      required: [points]
+      properties:
+        points:
+          type: integer
+          minimum: 100
+          description: 抵扣积分数量（最小 100 积分 = 1 元）
+
+    PointsAccountVO:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        availablePoints:
+          type: integer
+          description: 可用积分
+        frozenPoints:
+          type: integer
+          description: 冻结积分
+
+    # --- 订单相关（修改） ---
+
+    CreateOrderDTO:
+      type: object
+      required: [userId, items, totalAmount]
+      properties:
+        userId:
+          type: integer
+          format: int64
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItemDTO"
+        totalAmount:
+          type: number
+          format: decimal
+          description: 订单总金额（抵扣前）
+        pointsDeduction:
+          $ref: "#/components/schemas/PointsDeductionDTO"
+          description: [NEW] 积分抵扣参数（可选）
+
+    OrderItemDTO:
+      type: object
+      required: [productId, quantity, price]
+      properties:
+        productId:
+          type: integer
+          format: int64
+        quantity:
+          type: integer
+          minimum: 1
+        price:
+          type: number
+          format: decimal
+
+    OrderVO:
+      type: object
+      properties:
+        orderId:
+          type: integer
+          format: int64
+        totalAmount:
+          type: number
+        pointsDeductionAmount:
+          type: number
+          description: [NEW] 积分抵扣金额
+        finalAmount:
+          type: number
+          description: [NEW] 实际支付金额 = totalAmount - pointsDeductionAmount
+        status:
+          type: string
+          enum: [PENDING_PAYMENT, PAID, CANCELLED]
+
+    # --- 统一响应体 ---
+
+    Result_PointsAccountVO:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        data:
+          $ref: "#/components/schemas/PointsAccountVO"
+        timestamp:
+          type: integer
+          format: int64
+
+    Result_OrderVO:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        data:
+          $ref: "#/components/schemas/OrderVO"
+        timestamp:
+          type: integer
+          format: int64
