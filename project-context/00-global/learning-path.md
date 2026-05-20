@@ -267,15 +267,17 @@ AI 会把 `openspec/changes/add-points-deduction/` 移入 `archive/`，并同步
 | 资源 | 地址 | 适合 |
 |------|------|------|
 | OpenSpec 官网 | https://openspec.dev | 了解 SDD 理念 |
-| OpenSpec 文档 | https://github.com/Fission-AI/OpenSpec/tree/main/docs | 官方 Getting Started |
-| Agent Skills 标准 | https://agentskills.io | 学会写 Skill |
+| OpenSpec Getting Started | https://github.com/Fission-AI/OpenSpec/blob/main/docs/getting-started.md | 理解 Delta Spec 机制（ADDED/MODIFIED/REMOVED） |
+| Agent Skills 标准 | https://agentskills.io | 学会写 Skill，检查 Skill 格式是否符合标准 |
 
 ### 中文教程
 
 | 资源 | 地址 | Stars | 适合 |
 |------|------|-------|------|
-| OpenSpec 实践指南 | https://github.com/ForceInjection/OpenSpec-practise | 340+ | 有完整 DEMO，推荐第一个看 |
-| Superpowers+OpenSpec | https://github.com/SYZ-Coder/superpowers-openspec-team-skills | 94 | 有记忆系统，参考进阶用法 |
+| OpenSpec 实践指南 | https://github.com/ForceInjection/OpenSpec-practise | 340+ | 中文最完整教程+Node.js/Python 两套 DEMO，推荐第一个看 |
+| Superpowers+OpenSpec | https://github.com/SYZ-Coder/superpowers-openspec-team-skills | 94 | 有记忆系统，参考跨会话记忆用法 |
+| DDD Skills 全景图 | https://github.com/ForceInjection/domain-driven-design-skills | 9 | DDD→OpenSpec 桥接，业务领域建模参考 |
+| OpenSpec Schemas 社区 | https://github.com/JiangWay/openspec-schemas | 63 | 社区贡献的 Schema，可参考或贡献通用 schemas |
 
 ### 社区
 
@@ -312,8 +314,9 @@ AI 会把 `openspec/changes/add-points-deduction/` 移入 `archive/`，并同步
     │
 第 3 周：进阶
     ├─ 配置 contract-verify（前后端联调）
-    ├─ 参考 SYZ-Coder 的 memory 系统
-    └─ 写自己的 Skill（如果有特殊需求）
+    ├─ 参考 SYZ-Coder 的 memory 系统（跨会话记忆）
+    ├─ 了解 OpenSpec Schemas 社区，贡献通用 schemas
+    └─ 如有 DDD 需求，参考 domain-driven-design-skills（DDD→OpenSpec 桥接）
 ```
 
 ---
