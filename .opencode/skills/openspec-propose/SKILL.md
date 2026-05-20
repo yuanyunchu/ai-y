@@ -76,7 +76,7 @@ When ready to implement, run /opsx-apply
       - Stop when all `applyRequires` artifacts are done
 
    c. **If an artifact requires user input** (unclear context):
-      - Use **AskUserQuestion tool** to clarify
+      - Use **question** tool to clarify
       - Then continue with creation
 
 5. **Show final status**

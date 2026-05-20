@@ -58,7 +58,7 @@ api-spec.yaml
 }
 ```
 
-### 项目目录
+### 项目目录（如不存在需手动创建 `mkdir -p tests/contract/reports`）
 
 ```
 tests/contract/

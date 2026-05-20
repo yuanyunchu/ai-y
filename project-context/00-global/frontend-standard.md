@@ -2,6 +2,7 @@
 
 > 精简版，作为 AI Prompt 的标准上下文
 > 详细架构见 `frontend-architecture.md`
+> **TODO 标记为项目定制点**，接入新项目时需按照实际 UI 库/构建工具填写
 
 ---
 

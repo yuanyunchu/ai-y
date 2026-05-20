@@ -41,7 +41,7 @@ AI 写完代码后，自动跑几道检查，把低级错误拦住。
 - [ ] 命名是否符合 `coding-standard.md`
 - [ ] API 是否符合 `api-conventions.yaml`
 - [ ] 架构是否符合 `architecture-baseline.md`
-- [ ] Git 提交是否符合 `git-commit-guard.md`
+- [ ] Git 提交是否符合 `project-context/00-global/git-commit-guard.md`
 
 ### Level 3: 逻辑检查（建议做）
 
@@ -187,11 +187,11 @@ Explore → Propose → Apply（AI 写代码）
                               ↓
                     Quality Gate（AI 自检）
                               ↓
+                    Code Review（红蓝对抗，可选）
+                              ↓
                     User Review Gate（你审查）
                               ↓
                     Git Sync Guard（保存提交）
-                              ↓
-                    Code Review（红蓝对抗，可选）
                               ↓
                     Archive（归档）
 ```
