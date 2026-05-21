@@ -310,34 +310,30 @@ Claude Code 支持 MCP（Model Context Protocol）工具，可以连数据库、
 | **主模型** | doubao-seed-2.0-code | 日常开发、复杂任务 |
 | **快速模型** | deepseek-v4-pro | 快速响应、简单任务（/fast 模式自动用这个） |
 
-### Claude 官方模型（参考）
+### 你的可用模型列表
 
 | 模型 | 特点 | 什么时候用 | 速度 |
 |-----|------|-----------|------|
-| **Claude 3.7 Sonnet** | 均衡型，写代码好 | 日常开发、改代码、写测试 | ⭐⭐⭐ |
-| **Claude 3.7 Opus** | 最聪明，会思考 | 复杂问题、架构设计、深度推理 | ⭐⭐ |
-| **Claude 3.5 Sonnet** | 快，性价比高 | 快速任务、简单改代码 | ⭐⭐⭐⭐ |
-| **Claude 3.5 Haiku** | 最快，便宜 | 简单问题、读文件、解释代码 | ⭐⭐⭐⭐⭐ |
-
-### 其他常用模型
-
-| 模型 | 特点 | 什么时候用 |
-|-----|------|-----------|
-| **DeepSeek-v4-pro** | 逻辑强，数学好 | 算法、复杂逻辑 |
-| **o3 / o3-mini** | 思考深，推理强 | 难题、架构设计 |
-| **GPT-4o** | 快，综合好 | 快速实现、样板代码 |
-| **Kimi-k2.6** | 上下文超长 | 读整个大项目、很多文件 |
-| **Gemini Flash** | 快，便宜 | 简单任务、量产代码 |
+| **doubao-seed-2.0-code** | ⭐ 你的主模型 | 日常开发、复杂任务 | ⭐⭐⭐ |
+| **doubao-seed-2.0-pro** | Pro 版，更强 | 复杂问题、深度推理 | ⭐⭐ |
+| **doubao-seed-2.0-lite** | 轻量版，快 | 快速任务、简单改代码 | ⭐⭐⭐⭐ |
+| **doubao-seed-code** | 基础代码模型 | 标准开发任务 | ⭐⭐⭐ |
+| **minimax-latest** (minimax-m2.7) | 推荐 | 均衡型任务 | ⭐⭐⭐ |
+| **glm-5.1** | 智谱模型 | 综合任务 | ⭐⭐⭐ |
+| **deepseek-v4-pro** | ⚡ 你的快速模型，逻辑强 | 快速响应、算法、复杂逻辑 | ⭐⭐⭐ |
+| **deepseek-v4-flash** | 极速版 | 测试、Debug、简单任务 | ⭐⭐⭐⭐⭐ |
+| **deepseek-v3.2** | v3 稳定版 | 稳定的代码生成 | ⭐⭐⭐ |
+| **kimi-k2.6** | 上下文超长 | 读整个大项目、很多文件 | ⭐⭐⭐ |
 
 ### 按任务选模型（参考你项目里的流程）
 
 | 任务 | 推荐模型 |
 |-----|---------|
-| 需求调研（Explore） | Claude Sonnet 200k / Kimi-k2.6 |
-| 架构设计（Propose） | Claude 3.7 thinking / DeepSeek-v4-pro / o3 |
-| 核心开发（Apply） | DeepSeek-v4-pro / Claude 3.7 Sonnet |
-| 标准开发（Apply） | GPT-4o / Gemini Flash / Ark-code |
-| 测试 Debug | GPT-4o-mini / DeepSeek-v4-flash |
+| 需求调研（Explore） | kimi-k2.6（读大项目） / doubao-seed-2.0-pro |
+| 架构设计（Propose） | doubao-seed-2.0-pro / deepseek-v4-pro |
+| 核心开发（Apply） | doubao-seed-2.0-code / deepseek-v4-pro |
+| 标准开发（Apply） | doubao-seed-2.0-lite / doubao-seed-code / minimax-latest |
+| 测试 Debug | deepseek-v4-flash / doubao-seed-2.0-lite |
 
 ---
 
