@@ -2,7 +2,7 @@
 
 > 精简版，作为 AI Prompt 的标准上下文
 > 详细架构见 `frontend-architecture.md`
-> **TODO 标记为项目定制点**，接入新项目时需按照实际 UI 库/构建工具填写
+> 未明确的项目定制点必须先确认后再生成代码，禁止让 AI 猜测 UI 库、构建工具或样式方案
 
 ---
 
@@ -11,12 +11,12 @@
 | 项 | 值 |
 |----|-----|
 | 框架 | Vue 2.x |
-| UI 库 | <!-- TODO: Element-UI / Ant Design Vue 等 --> |
+| UI 库 | 以 `frontend-architecture.md` 为准；未配置时先确认 |
 | 状态管理 | Vuex 3.x |
 | 路由 | Vue Router 3.x |
-| HTTP | <!-- TODO: axios 等 --> |
-| CSS | <!-- TODO: SCSS / Less --> |
-| 构建 | <!-- TODO: webpack / vite --> |
+| HTTP | 以项目 `src/utils/request` 或同等封装为准；未配置时先确认 |
+| CSS | 以项目现有样式方案为准；未配置时先确认 |
+| 构建 | 以项目 `package.json` scripts 为准；未配置时先确认 |
 
 ---
 
@@ -54,7 +54,7 @@
 
 ```vue
 <template>
-  <!-- TODO: 填写团队偏好的组件结构顺序 -->
+  <!-- 模板中只放结构和组件组合，业务逻辑放在 script methods/computed 中 -->
 </template>
 
 <script>
@@ -148,13 +148,13 @@ export function createOrder(data) {
 
 ## 样式规范
 
-<!-- TODO: 填写团队样式规范 -->
+默认复用项目现有样式体系；未确认预处理器和变量路径前，不新增样式依赖。
 
 | 规范项 | 约定 |
 |--------|------|
-| 命名方案 | <!-- TODO: BEM / kebab-case / CSS Modules / Scoped --> |
-| 预处理器 | <!-- TODO: SCSS 变量 / mixin 定义位置 --> |
-| 全局变量 | <!-- TODO: 颜色、字号、间距变量文件路径 --> |
+| 命名方案 | 默认 kebab-case / BEM；若项目已有 CSS Modules 或其他方案，以项目现状为准 |
+| 预处理器 | 以项目现有配置为准；未配置时先确认，不新增依赖 |
+| 全局变量 | 优先复用项目已有颜色、字号、间距变量；未找到时先确认 |
 | 深度选择器 | Vue 2 使用 `::v-deep` 或 `/deep/`，禁止用 `>>>` |
 | 禁止 | `!important`（除非覆盖第三方组件且无其他方案） |
 
@@ -171,7 +171,7 @@ export default [
     component: () => import('@/views/order/List.vue'),
     meta: {
       title: '订单列表',
-      <!-- TODO: 填写其他 meta 约定，如 keepAlive、权限标识等 -->
+      // 其他 meta 字段以现有路由约定为准，如 keepAlive、权限标识等
     }
   }
 ]
@@ -186,7 +186,7 @@ export default [
 
 ## 表单与校验
 
-<!-- TODO: 填写表单校验方案（Element-UI 自带 / async-validator / 自定义） -->
+表单校验方案以项目 UI 库和现有封装为准；未明确时先确认，禁止直接引入新校验库。
 
 ```js
 // 示例：Element-UI 表单校验
@@ -205,19 +205,19 @@ rules: {
 ### 列表页模式
 
 ```vue
-<!-- TODO: 填写团队标准列表页模式（搜索 + 表格 + 分页） -->
+<!-- 列表页默认包含搜索、重置、表格、分页、loading、空状态和错误提示；具体组件以项目 UI 库为准。 -->
 ```
 
 ### 表单页模式
 
 ```vue
-<!-- TODO: 填写团队标准表单页模式（新增/编辑复用） -->
+<!-- 表单页默认支持新增/编辑复用、提交前校验、提交中防重复点击、提交成功返回或刷新列表。 -->
 ```
 
 ### 详情页模式
 
 ```vue
-<!-- TODO: 填写团队标准详情页模式 -->
+<!-- 详情页默认支持只读展示、加载态、空态、错误态和返回入口；复杂详情按模块拆分业务组件。 -->
 ```
 
 ---

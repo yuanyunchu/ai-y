@@ -3,7 +3,8 @@
 > 基于「按环节匹配模型特性」理念：上下文长度 ↔ 推理深度 ↔ 响应速度 ↔ 成本
 > **AI 生成文档必须遵循 OpenSpec 格式：Explore → Propose → Apply → Archive**
 > 适用团队：需要规模化使用 AI 辅助研发的工程团队
-> 文档状态：V1.3 OpenSpec 融合版
+> 文档状态：V1.4 OpenSpec 融合版
+> 模型选型唯一真源：`project-context/00-global/model-assignment.md`；本文只保留流程说明和 Prompt 模板，模型清单以全局文件为准
 
 ---
 
@@ -11,10 +12,12 @@
 
 把研发流程拆解为 6 个环节，每个环节匹配最适合的 AI 特性：
 
+> 下表是流程摘要。若与 `project-context/00-global/model-assignment.md` 不一致，以 `model-assignment.md` 为准。
+
 | 研发环节 | OpenSpec 阶段 | 核心任务 | 推荐模型 | 选型逻辑 | 产出物位置 |
 |---------|--------------|---------|---------|---------|-----------|
-| **① 需求与调研** | **Explore** | 读历史代码、分析文档、梳理业务 | Kimi-k2.6, Claude 3.5/4 Sonnet 200k | 吞食大量代码库和文档，**召回率**第一 | `openspec/changes/<name>/proposal.md`<br>`project-context/01-requirement/ai-analysis/<name>.md` |
-| **② 架构与设计** | **Propose** | 后端架构+前端架构、数据库设计、模块解耦 | DeepSeek-v4-pro, o1/o3, Claude 3.7 thinking | 因果推理和逻辑严密性，**准确率**优先 | `openspec/changes/<name>/design.md`<br>`openspec/changes/<name>/specs/<cap>/spec.md`<br>`project-context/02-design/<name>/` |
+| **① 需求与调研** | **Explore** | 读历史代码、分析文档、梳理业务 | Kimi-k2.6, Claude Sonnet 200k | 吞食大量代码库和文档，**召回率**第一 | `openspec/changes/<name>/proposal.md`<br>`project-context/01-requirement/ai-analysis/<name>.md` |
+| **② 架构与设计** | **Propose** | 后端架构+前端架构、数据库设计、模块解耦 | DeepSeek-v4-pro, o3, Claude thinking | 因果推理和逻辑严密性，**准确率**优先 | `openspec/changes/<name>/design.md`<br>`openspec/changes/<name>/specs/<cap>/spec.md`<br>`project-context/02-design/<name>/` |
 | **③ 核心开发（后端）** | **Apply（攻坚）** | 复杂算法、框架层代码、性能优化 | DeepSeek-v4-pro, o3-mini-high, Claude 3.7 | 理解深层依赖和边界条件，**逻辑完整性**优先 | `openspec/changes/<name>/tasks.md` 核心任务<br>`project-context/03-core/<name>/` |
 | **③ 核心开发（前端）** | **Apply（攻坚）** | 复杂交互、权限封装、SDK封装、状态管理 | DeepSeek-v4-pro, Claude 3.7 Sonnet | 理解复杂交互逻辑和组件边界，**逻辑完整性**优先 | `project-context/03-core/<name>/frontend/` |
 | **④ 标准开发（后端）** | **Apply（量产）** | CRUD、API 接口、单元测试、样板代码 | Ark-code-latest, GPT-4o, Gemini 2.5 Flash | **吞吐量和响应速度**，成本敏感 | `openspec/changes/<name>/tasks.md` 标准任务<br>`project-context/04-standard/generated/` |
@@ -161,8 +164,8 @@
 
 约束条件：
 - 技术栈：Vue 2.x + Vuex 3.x + Vue Router 3.x
-- UI 库：<!-- TODO: 填写 --> 
-- CSS：<!-- TODO: 填写 -->
+- UI 库：以 `project-context/00-global/frontend-architecture.md` 为准；若未配置，先确认后再生成代码，禁止猜测
+- CSS：以 `project-context/00-global/frontend-standard.md` 为准；若未配置，先确认后再生成代码，禁止猜测
 - 编码规范：遵循 project-context/00-global/frontend-standard.md
 ```
 
@@ -227,7 +230,7 @@
    - 所有 RPC / Feign 调用必须设置超时和重试（connectTimeout / readTimeout / maxAttempts）
 5. 【边界条件】显式处理 null（使用 Optional / Objects.requireNonNull）、并发（锁粒度最小化，优先 Redis 分布式锁）、超时场景
 6. 【性能】
-   - 时间复杂度不超过 O(n log n)
+   - 明确关键路径的时间复杂度和数据规模边界；无法满足 O(n log n) 时必须说明原因和降级策略
    - 禁止 N+1 查询，复杂查询使用 MyBatis-Plus Join 或手写 XML
    - 批量操作使用 MyBatis-Plus saveBatch / updateBatch，阈值控制在 500 条/批
 7. 【可观测性】关键路径必须打印结构化日志（trace_id, span_id, user_id, cost_ms），使用 SLF4J + MDC
@@ -278,7 +281,7 @@
 - 单元测试（覆盖率 ≥ 80%）
 
 #### 关键规则
-- ⚠️ **必须要求 AI 输出"思考过程"**：让模型先写伪代码或步骤分解，再输出正式代码，能大幅降低逻辑错误
+- ⚠️ **必须要求 AI 输出可审查的推理摘要**：先写伪代码、步骤分解、关键决策依据和边界条件清单，再输出正式代码
 - ⚠️ **禁止直接合入**：核心代码必须经过 Code Review 或至少让另一个 AI 模型做"对抗性审查"
 - ⚠️ **前后端核心代码需交叉 Review**：前端核心组件需确认后端接口契约一致性，后端需确认前端数据消费方式
 
@@ -358,7 +361,7 @@
 
 要求：
 - 严格遵循 project-context/00-global/frontend-standard.md 编码规范
-- 使用 UI 库组件（<!-- TODO: 填写 UI 库名 -->）
+- 使用项目已配置的 UI 库组件；若 `frontend-architecture.md` 未明确 UI 库，先确认后再生成
 - 响应数据与后端 Result<T> 对齐：res.data.data 为业务数据
 - 分页参数与后端对齐：{ current, size }
 - 表单校验规则完整（必填、格式、长度）
@@ -389,7 +392,7 @@
 - **模型**：轻量快反模型（DeepSeek-v4-flash / GPT-4o-mini / Gemini Flash）
 - **输入**：日志（脱敏后）+ Stack Trace + 浏览器控制台报错 + 代码片段
 - **输出**：修复代码 + `bug-fixes.md`
-- **成本**：0.1x baseline（无限使用）
+- **成本**：0.1x baseline（适合高频使用，但仍需日志脱敏和调用配额控制）
 
 #### 输入
 - 错误日志 / Stack Trace（多服务日志，需通过 trace_id 串联）
@@ -483,7 +486,7 @@ trace_id: xxx
 - 前端影响评估
 ```
 
-详见 skill: `contract-verify`
+建设状态：待实现。建议先落地为 `tests/contract/contract-verify.js`，再沉淀为团队 skill。
 
 #### 方案 B：dev-schema-guard（开发实时校验）
 
@@ -501,7 +504,7 @@ trace_id: xxx
 - 仅开发环境生效，生产环境不注册
 ```
 
-详见 skill: `dev-schema-guard`
+建设状态：待实现。建议先落地为 `src/utils/schema-guard/`，再沉淀为团队 skill。
 
 #### 标准 Prompt 模板（生成 Schema）
 
@@ -540,7 +543,7 @@ trace_id: xxx
 模型分工只是基础，实践中最大的坑是**上下文丢失**。必须建立"研发上下文包"机制，采用 **OpenSpec 变更级 + project-context 项目级** 双轨制：
 
 ```
-/home/yhy/testpro/
+<repo-root>/
 ├── openspec/                          # 【变更级】OpenSpec 标准管理
 │   ├── changes/
 │   │   └── <change-name>/             # 每个需求一个变更目录
@@ -635,10 +638,10 @@ openspec archive <change-name>
 | 长上下文大模型 | 环节 ① | 10x | **限制输入长度**，先用工具提取关键文件，不要直接上传整个 Git 仓库 |
 | 深度推理模型 | 环节 ②③ | 5x | 开启"推理模式"仅用于设计，写代码时关闭深度思考（如果模型支持） |
 | 高速代码模型 | 环节 ④ | 1x | 批量生成，减少往返次数 |
-| 轻量快反模型 | 环节 ⑤ | 0.1x | 无限使用，但注意日志脱敏工作流自动化 |
+| 轻量快反模型 | 环节 ⑤ | 0.1x | 适合高频使用，但需配额监控和日志脱敏自动化 |
 
 ### 省钱技巧
-- 环节 ① 可以先用 **轻量模型提取摘要**，再把摘要喂给长上下文模型做深度分析，成本降低 70%
+- 环节 ① 可以先用 **轻量模型提取摘要**，再把摘要喂给长上下文模型做深度分析，通常能显著降低长上下文调用成本
 - 环节 ④ 的单元测试可以用轻量模型生成，人工只 Review 边界条件
 
 ---
@@ -661,7 +664,7 @@ openspec archive <change-name>
 
 > 例如：如果开发用 DeepSeek，评审就用 Claude 或 o3-mini。
 
-这个 **"红蓝对抗"机制** 能发现 90% 以上的 AI 幻觉导致的隐蔽 Bug。
+这个 **"红蓝对抗"机制** 能显著提高发现 AI 幻觉、边界遗漏和隐蔽 Bug 的概率，但不能替代人工 Review、测试和灰度验证。
 
 | 开发模型 | 建议评审模型 | 评审重点 |
 |---------|------------|---------|
@@ -673,7 +676,7 @@ openspec archive <change-name>
 
 ## 八、待细化事项（TODO）
 
-以下内容需要结合 codexx 实际项目情况进一步补充：
+以下内容需要结合实际项目情况进一步补充：
 
 - [x] **技术栈确认**：已确认为 Java + SCA 微服务生态
   - 语言：Java 17（LTS）
@@ -692,7 +695,7 @@ openspec archive <change-name>
   - 构建：Maven（pom.xml 统一管理版本号）
   - 容器：Docker + Kubernetes
 - [ ] **模型供应商确认**：是否已接入 Ark / DeepSeek / Kimi API？Token 配额？
-- [ ] **项目目录结构映射**：把 `project-context/` 规范映射到 codexx 实际仓库结构
+- [ ] **项目目录结构映射**：把 `project-context/` 规范映射到实际仓库结构
 - [ ] **Prompt 模板工程化**：是否使用 Dify / LangChain / 自研 Prompt 管理系统？
 - [ ] **质量门禁自动化**：哪些检查可以接入 CI（如 API 规范校验、单元测试覆盖率）？
 - [ ] **安全合规**：日志脱敏、代码审查、敏感信息扫描的自动化方案
@@ -712,7 +715,7 @@ openspec archive <change-name>
 xxx-service/                      # 业务服务根模块
 ├── xxx-api/                      # common-api：跨服务共享
 │   ├── src/main/java/
-│   │   └── com/codexx/xxx/api/
+│   │   └── com/<company>/<service>/api/
 │   │       ├── feign/            # Feign 接口 + FallbackFactory
 │   │       ├── dto/              # 共享 DTO（入参）
 │   │       ├── vo/               # 共享 VO（出参）
@@ -720,7 +723,7 @@ xxx-service/                      # 业务服务根模块
 │   └── pom.xml                   # 仅依赖 spring-cloud-openfeign-core，禁止 web/mybatis
 └── xxx-biz/                      # 业务实现模块
     ├── src/main/java/
-    │   └── com/codexx/xxx/biz/
+    │   └── com/<company>/<service>/biz/
     │       ├── controller/       # 仅负责：参数接收、权限校验、结果包装、路由映射
     │       ├── service/
     │       │   ├── impl/         # 业务逻辑实现，事务边界
@@ -951,5 +954,5 @@ public void createOrder(CreateOrderDTO dto) {
 ---
 
 > 文档维护人：架构组
-> 最后更新：2026-05-18
+> 最后更新：2026-05-29
 > 下次评审：待安排
