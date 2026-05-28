@@ -4,6 +4,7 @@
 
 **按研发环节匹配模型特性**：上下文长度 ↔ 推理深度 ↔ 响应速度 ↔ 成本
 AI 生成的所有文档必须符合 OpenSpec 格式，走 Explore → Propose → Apply → Archive 标准流程。
+所有阶段必须接入 AI Harness 留痕：记录模型、Prompt、上下文、执行检查、评分、失败样本和残余风险。
 
 ---
 
@@ -20,13 +21,16 @@ AI 生成的所有文档必须符合 OpenSpec 格式，走 Explore → Propose �
 | **⑤ 测试 Debug** | **Apply（收尾）** / Archive | DeepSeek-v4-flash / GPT-4o-mini | 毫秒级响应，几乎零成本 | 修复代码 + `bug-fixes.md` |
 | **⑥ 前后端联调验证** | **Apply（收尾）→ Archive** | DeepSeek-v4-flash / GPT-4o-mini | 契约校验 + 联调报告 | 契约验证报告 + Schema 拦截器 |
 
+AI Harness 是横切层，不占用研发环节编号：Prompt Harness 做模型/Prompt 回归，Artifact Harness 做 OpenSpec 文档检查，Code Harness 做测试/构建/最小复现，Contract Harness 做前后端契约验证，Trace Harness 做成本和失败样本留痕。
+
 ---
 
 ## 上下文传递铁律
 
 1. **下游必读上游**：环节③的 Prompt 开头必须包含 "基于 proposal.md / design.md / architecture.md..."
 2. **禁止跨环节**：标准开发模型不能直接读原始需求，必须读设计文档
-3. **定期归档**：迭代结束后 Archive，同步 specs 到 `openspec/specs/`，存入 RAG 知识库
+3. **Harness 留痕**：进入 Archive 前必须保留 `project-context/06-harness/reports/` 报告，记录已执行检查、未执行原因和残余风险
+4. **定期归档**：迭代结束后 Archive，同步 specs 到 `openspec/specs/`，存入 RAG 知识库
 
 ---
 
@@ -45,12 +49,14 @@ AI 生成的所有文档必须符合 OpenSpec 格式，走 Explore → Propose �
 ## 关键规则
 
 - 环节① 必须限定上下文范围，先给 common-api + Gateway 路由，再深入目标服务；前端需提供路由配置 + 状态管理模块
-- 环节②③ 必须要求 AI 先输出伪代码/思考过程，确认后再输出正式代码
+- 环节②③ 必须要求 AI 先输出伪代码、步骤分解、关键决策依据和边界条件清单，确认后再输出正式代码
 - 环节③ 核心代码禁止直接合入，必须经过 Code Review 或对抗性审查
 - 环节④ 允许 AI 直接生成后人工快速 Review
 - 环节⑤ 日志脱敏后再给 AI；前端需提供浏览器控制台报错 + 网络请求
 - 环节⑥ 前后端联调验证：开发阶段用 dev-schema-guard 实时校验，联调阶段用 contract-verify 总验收
+- AI Harness：Archive 前必须执行或记录 Prompt/Artifact/Code/Contract Harness 结果，报告存入 `project-context/06-harness/reports/`
 - 全局规范文件位于 `project-context/00-global/`，所有 AI 调用应将其作为 system prompt 上下文
+- Harness 规范见 `project-context/00-global/ai-harness.md`
 - 前端编码规范见 `project-context/00-global/frontend-standard.md`，前端架构见 `project-context/00-global/frontend-architecture.md`
 
 ---
@@ -70,6 +76,7 @@ AI 生成的所有文档必须符合 OpenSpec 格式，走 Explore → Propose �
 ```
 openspec/changes/<name>/    # 变更级：Explore → Propose → Apply → Archive
 project-context/            # 项目级：全局架构基线、编码规范、API 约定
+project-context/06-harness/ # AI Harness 用例、Prompt、评分标准、报告
 ```
 
 完整模型分配细则见 `project-context/00-global/model-assignment.md`

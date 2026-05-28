@@ -174,10 +174,12 @@ project-context/00-global/frontend-standard.md ──→ 所有前端环节均�
 project-context/00-global/api-conventions.yaml ──→ 环节②④ 必读
 project-context/00-global/architecture-baseline.md ──→ 环节①② 必读
 project-context/00-global/frontend-architecture.md ──→ 环节①② 前端必读
+project-context/00-global/ai-harness.md ──→ 所有环节的评测、执行、回归与报告留痕
 
 环节① 输出 (proposal + ai-analysis + 前端影响清单)  ──→ 环节② 输入
 环节② 输出 (design + frontend-design + specs + tasks) ──→ 环节③④ 输入
 环节③④ 输出 (后端源码 + 前端源码 + UT)              ──→ 环节⑤ 输入（如遇 Bug）
+Harness 报告 (cases + reports)                      ──→ Prompt/模型回归与 Bad Case 复盘
 Archive 归档                                        ──→ 下个迭代 RAG 知识库
 ```
 

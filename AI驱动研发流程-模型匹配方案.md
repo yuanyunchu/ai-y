@@ -27,6 +27,22 @@
 
 ---
 
+### AI Harness 横切层：评测、执行与回归
+
+六层模型负责"谁来做"，AI Harness 负责"怎么证明做得对、怎么复现、怎么回归"。它不是第七个研发环节，而是贯穿 Explore → Propose → Apply → Archive 的质量底座。
+
+| Harness 类型 | 覆盖环节 | 推荐实践 | 产出物 |
+|--------------|----------|----------|--------|
+| Prompt Harness | ①②③④⑤ | Promptfoo：同一任务跑不同模型/Prompt，做断言和回归 | `project-context/06-harness/cases/*.yaml` |
+| Artifact Harness | ①② | DeepEval / Inspect AI / 自定义 scorer：评估 OpenSpec 文档完整性、一致性、可执行性 | `project-context/06-harness/reports/*artifact*.json` |
+| Code Harness | ③④⑤ | 参考 SWE-bench 的隔离执行思想：生成 patch 后跑 lint/test/build/最小复现 | `project-context/06-harness/reports/*code*.json` |
+| Contract Harness | ⑥ | 自建 `contract-verify` + `dev-schema-guard`：校验 OpenAPI 与真实响应/前端 Schema | `tests/contract/reports/` |
+| Trace Harness | 全流程 | MLflow / LangSmith / 自建 JSONL：记录模型、Prompt、token、耗时、成本、评分和失败样本 | `project-context/06-harness/reports/` |
+
+详细规范见 `project-context/00-global/ai-harness.md`。Archive 前至少需要一份 Harness 报告，说明执行过的检查、未执行原因、豁免项和残余风险。
+
+---
+
 ## 二、各环节标准作业流程（SOP）
 
 ---
@@ -563,6 +579,7 @@ trace_id: xxx
     │   ├── frontend-architecture.md   # 前端架构基线（Vue 2）
     │   ├── frontend-standard.md       # 前端编码规范速查
     │   ├── coding-standard.md         # 后端编码规范速查
+    │   ├── ai-harness.md              # AI 评测、执行与回归基线
     │   └── api-conventions.yaml       # API 全局约定
     ├── 01-requirement/
     │   ├── prd/                       # 原始需求文档
@@ -579,8 +596,13 @@ trace_id: xxx
     │   ├── generated/                 # 环节④ 后端可重生成代码
     │   │   └── frontend/              #   前端可重生成代码
     │   └── common-api/                # 跨服务 Feign 接口 + DTO
-    └── 05-debug/
-        └── bug-fixes.md               # Bug 复盘记录（前后端）
+    ├── 05-debug/
+    │   └── bug-fixes.md               # Bug 复盘记录（前后端）
+    └── 06-harness/
+        ├── cases/                     # Prompt/模型/失败样本回归用例
+        ├── prompts/                   # 可版本化 Prompt 模板
+        ├── scorers/                   # 评分标准和自定义检查说明
+        └── reports/                   # Harness 执行报告
 ```
 
 ### 规则
@@ -590,6 +612,7 @@ trace_id: xxx
 4. **定期归档**：迭代结束后执行 `openspec archive <change-name>`，同步 specs 到 `openspec/specs/`，将 `ai-analysis.md` 和 `design.md` 存入向量数据库作为 RAG 知识库
 5. **项目级基线同步**：若变更新增服务/接口/全局规范/前端页面/路由，必须更新 `project-context/00-global/` 下的对应文件
 6. **前后端上下文同步**：环节②必须同时产出后端设计和前端设计，确保接口契约一致
+7. **Harness 报告必留痕**：进入 Archive 前，必须在 `project-context/06-harness/reports/` 留存评测/执行报告；无法运行的检查必须记录原因和残余风险
 
 ---
 
@@ -609,6 +632,7 @@ trace_id: xxx
 | **架构合规性** | 服务拆分合理，数据库设计满足规范 | `architecture.md` |
 | **接口规范性** | API Spec 符合 api-conventions.yaml 全局约定 | `api-spec.yaml` |
 | **前后端契约一致性** | 前端请求参数/响应数据与后端 API Spec 对齐 | `api-spec.yaml` + `frontend-design.md` |
+| **Harness 留痕** | 已执行 Prompt/Artifact/Code/Contract Harness，或记录未执行原因和风险 | `project-context/06-harness/reports/` |
 
 ### Archive 归档流程
 
